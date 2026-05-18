@@ -1,4 +1,100 @@
-// js/playbooks.js
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise SOC Simulator Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Unlocks the ability to toggle themes cleanly via JavaScript
+        }
+    </script>
+    <style>
+        /* Custom scrollbar tracking the theme wrapper */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-mono h-screen overflow-hidden flex flex-col transition-colors duration-200">
+
+    <header class="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 p-4 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <span class="animate-pulse h-3 w-3 rounded-full bg-emerald-500"></span>
+            <h1 class="text-xl font-bold tracking-wider text-emerald-700 dark:text-emerald-400">CYBER-ENGINE // INTERACTIVE SOC</h1>
+        </div>
+        <div class="flex items-center gap-6">
+            <button onclick="toggleSystemTheme()" class="text-xs font-bold tracking-wide border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 px-3 py-1.5 rounded transition-all cursor-pointer shadow-sm" id="theme-btn">
+                🌙 DARK MODE
+            </button>
+            <div class="text-sm text-slate-500 dark:text-slate-400" id="sim-clock">Shift Time: 00:00:00</div>
+        </div>
+    </header>
+
+    <main class="p-6 flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 min-h-0">
+        
+        <section class="xl:col-span-1 flex flex-col gap-3 min-h-0">
+            <h2 class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 shrink-0">Risk Tallies & Metrics</h2>
+            
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-red-900/40 rounded-lg p-3 flex flex-col justify-between shadow-sm shrink-0">
+                <span class="text-xs font-bold uppercase text-red-600 dark:text-red-400 tracking-wider">High / Critical Risks</span>
+                <span class="text-3xl font-black text-red-600 dark:text-red-500 my-0.5" id="tally-high">0</span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-amber-900/30 rounded-lg p-3 flex flex-col justify-between shadow-sm shrink-0">
+                <span class="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 tracking-wider">Alerts Investigated</span>
+                <span class="text-3xl font-black text-amber-600 dark:text-amber-500 my-0.5" id="tally-investigated">0</span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-emerald-900/30 rounded-lg p-3 flex flex-col justify-between shadow-sm shrink-0">
+                <span class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">Threats Contained</span>
+                <span class="text-3xl font-black text-emerald-600 dark:text-emerald-400 my-0.5" id="tally-contained">0</span>
+            </div>
+
+            <div class="relative bg-slate-950 p-1 rounded-lg overflow-hidden border border-red-900 shadow-md shrink-0">
+                <div class="absolute inset-0 opacity-25 bg-[linear-gradient(45deg,#000_25%,#fff_25%,#fff_50%,#000_50%,#000_75%,#fff_75%,#fff_100%)] bg-[length:20px_20px]"></div>
+                <div class="relative bg-slate-900 p-3 rounded-[6px] flex flex-col justify-between">
+                    <span class="text-xs font-bold uppercase text-red-400 tracking-widest animate-pulse">⚠️ Threats Escalated</span>
+                    <span class="text-4xl font-black text-white my-0.5" id="tally-escalated">0</span>
+                    <span class="text-[10px] text-red-400/80 font-bold"> Remediations Failed (Tier 3)</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg p-2 flex flex-col justify-between shadow-sm shrink-0">
+                <span class="text-xs font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider">Total Processed Logs</span>
+                <span class="text-xl font-black text-slate-800 dark:text-slate-300" id="tally-total">0</span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg p-3 flex-1 flex flex-col min-h-0 shadow-sm">
+                <span class="text-xs font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider mb-2 shrink-0">Top At-Risk Assets</span>
+                <div id="server-tally-list" class="flex flex-col gap-1.5 overflow-y-auto text-sm"></div>
+            </div>
+        </section>
+
+        <section class="xl:col-span-3 flex flex-col gap-6 min-h-0">
+            
+            <div class="bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800 rounded-lg p-4 h-[55%] flex flex-col min-h-0 shadow-sm">
+                <div class="text-xs uppercase text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-2 mb-3 shrink-0">SIEM Real-Time Stream</div>
+                <div class="flex-1 overflow-y-auto">
+                    <table class="w-full text-left">
+                        <thead class="sticky top-0 bg-slate-50 dark:bg-slate-950 z-10">
+                            <tr class="text-xs text-slate-400 dark:text-slate-500 uppercase border-b border-slate-200 dark:border-slate-900">
+                                <th class="pb-2 w-24">Timestamp</th>
+                                <th class="pb-2 w-32">Asset</th>
+                                <th class="pb-2">Incident / Signature</th>
+                                <th class="pb-2 w-24 text-center">Severity</th>
+                                <th class="pb-2 w-24 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-stream-body" class="divide-y divide-slate-200 dark:divide-slate-900 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 d// js/playbooks.js
 
 const playbooks = {
     "T1110": {
@@ -65,4 +161,23 @@ const playbooks = {
             { text: "Label event as a permanent false positive", correct: false }
         ]
     }
-};
+};ark:bg-slate-900 dark:border-slate-800 rounded-lg p-5 h-[45%] flex flex-col min-h-0 shadow-sm" id="playbook-desk">
+                <div class="text-xs uppercase text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-2 mb-3 shrink-0">Analyst Investigation Desk</div>
+                <div id="playbook-content" class="flex-1 flex flex-col justify-center items-center text-slate-400 dark:text-slate-500 italic text-sm overflow-y-auto">
+                    Select an active alert signature to initialize corporate incident playbook.
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="p-3 bg-slate-50 border-t border-slate-200 dark:bg-slate-950 dark:border-slate-900 flex justify-center items-center shrink-0">
+        <button onclick="resetSimulationSession()" class="text-xs font-bold tracking-wider text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 dark:text-red-400 dark:bg-red-950/20 dark:border-red-900/40 dark:hover:bg-red-950/40 px-4 py-2 rounded transition-all cursor-pointer shadow-xs">
+            ⚠️ WIPE LOCAL DATABASE & RESET SIMULATOR
+        </button>
+    </footer>
+
+    <script src="js/playbooks.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
