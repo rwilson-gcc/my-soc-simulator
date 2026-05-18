@@ -3,7 +3,6 @@
 const assets = ["DC-01.corp", "SQL-PROD-02", "WS-ENG-491", "DMZ-WEB-01", "SAP-FIN-01", "GW-BORDER-01", "CLOUD-KUBE-04"];
 const locations = ["London, UK", "Frankfurt, DE", "Ashburn, US", "Unknown / VPN Proxy", "Tokyo, JP", "Sydney, AU"];
 
-// Diversified signature array across all triage classes
 const signatures = [
     { text: "Inbound port sweep detected on perimeter", sev: "Low", mitre: "T1046" },
     { text: "Stale domain account logged in out-of-hours", sev: "Low", mitre: "T1078" },
@@ -25,9 +24,8 @@ let state = {
 };
 
 let currentActiveAlert = null;
-const investigatedAlerts = new Set(); // Protects metrics against duplicate clicks on the same alert
+const investigatedAlerts = new Set(); 
 
-// Hydrate metrics from persistent browser memory if they exist
 if (localStorage.getItem('soc_sim_state')) {
     const savedState = JSON.parse(localStorage.getItem('soc_sim_state'));
     state = { ...state, ...savedState };
@@ -80,8 +78,6 @@ function renderAlertRow(time, asset, msg, severity, mitre) {
     `;
 
     tbody.insertBefore(row, tbody.firstChild);
-    
-    // Prevent DOM memory crash over 8 hours by keeping max visible table rows capped at 25
     if (tbody.children.length > 25) tbody.removeChild(tbody.lastChild);
 }
 
@@ -91,7 +87,7 @@ function loadPlaybook(mitreID, assetName, rowElement, alertID) {
     
     currentActiveAlert = { row: rowElement, asset: assetName, mitre: mitreID, id: alertID };
 
-    // Tally up investigation actions safely
+    // Register active investigation upon selection
     if (!investigatedAlerts.has(alertID)) {
         investigatedAlerts.add(alertID);
         state.investigatedCount++;
@@ -99,50 +95,73 @@ function loadPlaybook(mitreID, assetName, rowElement, alertID) {
         updateMetricsUI();
     }
 
-    let stepsHTML = playbook.steps.map((step, idx) => `
-        <label class="flex items-start gap-3 text-slate-300 text-sm cursor-pointer select-none bg-slate-950/40 p-2 border border-slate-900 rounded hover:border-slate-800">
-            <input type="checkbox" class="mt-1 accent-emerald-500" id="step-${idx}">
-            <span>${step}</span>
-        </label>
+    // Shuffle options array slightly so the correct answer isn't always the first choice
+    let optionsShuffled = [...playbook.options].sort(() => Math.random() - 0.5);
+
+    let choicesHTML = optionsShuffled.map((opt) => `
+        <button onclick="submitMitigationChoice(${opt.correct})" 
+                class="w-full text-left font-sans text-xs bg-slate-950/60 p-3 border border-slate-800 rounded hover:border-slate-600 hover:bg-slate-900 text-slate-300 transition-all cursor-pointer">
+            🔹 ${opt.text}
+        </button>
     `).join('');
 
     desk.innerHTML = `
         <div class="w-full flex flex-col h-full justify-between text-left">
             <div>
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-emerald-400 font-bold text-sm uppercase">${playbook.title}</h3>
-                    <span class="text-xs text-slate-500">Target Asset: <b class="text-slate-300">${assetName}</b></span>
+                <div class="flex justify-between items-center mb-2 border-b border-slate-900 pb-1.5">
+                    <h3 class="text-emerald-400 font-bold text-xs uppercase">${playbook.title}</h3>
+                    <span class="text-[11px] text-slate-500">Asset: <b class="text-slate-300">${assetName}</b></span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 my-2">${stepsHTML}</div>
-            </div>
-            <div class="flex justify-end gap-3 mt-2 pt-2 border-t border-slate-900">
-                <button onclick="executeMitigation()" class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2 rounded transition-all">
-                    ⚡ Execute Action: ${playbook.remediation}
-                </button>
+                <p class="text-[11px] text-slate-400 uppercase tracking-wider mb-2">Select the correct incident containment procedure:</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">${choicesHTML}</div>
             </div>
         </div>
     `;
 }
 
-function executeMitigation() {
+function submitMitigationChoice(isCorrect) {
     if (!currentActiveAlert) return;
 
-    state.containedCount++;
-    localStorage.setItem('soc_sim_state', JSON.stringify(state));
+    const desk = document.getElementById('playbook-content');
 
-    currentActiveAlert.row.style.opacity = '0.2';
-    currentActiveAlert.row.removeAttribute('onclick');
-    const btn = currentActiveAlert.row.querySelector('button');
-    if (btn) {
-        btn.innerText = "Mitigated";
-        btn.className = "text-xs text-slate-600 border border-slate-900 bg-transparent px-2 py-1 rounded cursor-not-allowed";
+    if (isCorrect) {
+        // Correct Action Pathway
+        state.containedCount++;
+        localStorage.setItem('soc_sim_state', JSON.stringify(state));
+
+        // Dim old table row visual display indicating successful mitigation resolution
+        currentActiveAlert.row.style.opacity = '0.2';
+        currentActiveAlert.row.removeAttribute('onclick');
+        const btn = currentActiveAlert.row.querySelector('button');
+        if (btn) {
+            btn.innerText = "Mitigated";
+            btn.className = "text-xs text-slate-600 border border-slate-900 bg-transparent px-2 py-1 rounded cursor-not-allowed";
+        }
+
+        desk.innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center py-2">
+                <span class="text-emerald-500 font-bold text-sm tracking-wide mb-1">✔ THREAT CONTAINED SUCCESSFULLY</span>
+                <span class="text-xs text-slate-500">Correct remediation vector processed. Keep monitoring SIEM telemetry feeds.</span>
+            </div>
+        `;
+    } else {
+        // Incorrect Action Pathway
+        currentActiveAlert.row.style.opacity = '0.5';
+        currentActiveAlert.row.removeAttribute('onclick');
+        const btn = currentActiveAlert.row.querySelector('button');
+        if (btn) {
+            btn.innerText = "Failed";
+            btn.className = "text-xs text-red-500/60 border border-red-950 bg-red-950/10 px-2 py-1 rounded cursor-not-allowed";
+        }
+
+        desk.innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center py-2">
+                <span class="text-red-500 font-bold text-sm tracking-wide mb-1">❌ NOT CONTAINED - ESCALATING THREAT</span>
+                <span class="text-xs text-slate-400 max-w-md">Incorrect protocol chosen. Remediation step failed, incident log payload passed to Tier-3 engineering teams.</span>
+            </div>
+        `;
     }
 
-    document.getElementById('playbook-content').innerHTML = `
-        <span class="text-emerald-500 font-semibold mb-1 text-xs">✔ THREAT CONTAINED SUCCESSFULLY</span>
-        <span class="text-xs text-slate-600">Select another active signature matrix to begin next triage routine.</span>
-    `;
-    
     currentActiveAlert = null;
     updateMetricsUI();
 }
@@ -156,7 +175,6 @@ function updateMetricsUI() {
     const serverListContainer = document.getElementById('server-tally-list');
     serverListContainer.innerHTML = '';
 
-    // Sort infrastructure weights dynamically based on calculated danger score
     const sortedServers = Object.keys(state.serverTallies).sort((a, b) => {
         return (state.serverTallies[b].Critical * 4 + state.serverTallies[b].High * 2 + state.serverTallies[b].Medium) - 
                (state.serverTallies[a].Critical * 4 + state.serverTallies[a].High * 2 + state.serverTallies[a].Medium);
@@ -179,7 +197,6 @@ function updateMetricsUI() {
     });
 }
 
-// Tick loops: new logs every 4 seconds, clock update every 1 second
 setInterval(createProceduralAlert, 4000);
 setInterval(() => {
     state.secondsElapsed++;
@@ -189,6 +206,5 @@ setInterval(() => {
     document.getElementById('sim-clock').innerText = `Shift Time: ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} / 08:00:00`;
 }, 1000);
 
-// Run initial execution rendering updates
 updateMetricsUI();
 createProceduralAlert();
