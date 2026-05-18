@@ -6,23 +6,23 @@
     <title>Enterprise SOC Simulator Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Responsive scrollbars tracking active theme classes */
+        /* Modern theme-aware scrollbars */
         ::-webkit-scrollbar { width: 6px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: var(--color-slate-100, #f1f5f9); }
+        :root[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--color-slate-900, #0f172a); }
+        ::-webkit-scrollbar-thumb { background: var(--color-slate-300, #cbd5e1); border-radius: 3px; }
+        :root[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--color-slate-700, #334155); border-radius: 3px; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-mono min-h-screen flex flex-col transition-colors duration-200">
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-mono min-h-screen flex flex-col transition-colors duration-200">
 
-    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 flex justify-between items-center">
+    <header class="border-b border-slate-200 bg-white/70 dark:border-slate-800 dark:bg-slate-900/50 p-4 flex justify-between items-center backdrop-blur-md">
         <div class="flex items-center gap-3">
             <span class="animate-pulse h-3 w-3 rounded-full bg-emerald-500"></span>
             <h1 class="text-xl font-bold tracking-wider text-emerald-600 dark:text-emerald-400">CYBER-ENGINE // INTERACTIVE SOC</h1>
         </div>
         <div class="flex items-center gap-6">
-            <button onclick="toggleSystemTheme()" class="text-xs font-bold tracking-wide border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded transition-all cursor-pointer text-slate-600 dark:text-slate-300" id="theme-btn">
+            <button onclick="toggleSystemTheme()" class="text-xs font-bold tracking-wide border border-slate-300 text-slate-600 bg-white hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 px-3 py-1.5 rounded transition-all cursor-pointer" id="theme-btn">
                 🌙 DARK MODE
             </button>
             <div class="text-sm text-slate-500 dark:text-slate-400" id="sim-clock">Shift Time: 00:00:00</div>
@@ -34,29 +34,29 @@
         <section class="xl:col-span-1 flex flex-col gap-4">
             <h2 class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-2">Risk Tallies & Metrics</h2>
             
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-red-900/50 rounded-lg p-4 flex flex-col justify-between shadow-sm dark:shadow-md shadow-slate-200/50 dark:shadow-red-950/10">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-red-900/40 rounded-lg p-4 flex flex-col justify-between shadow-sm">
                 <span class="text-xs font-bold uppercase text-red-600 dark:text-red-400 tracking-wider">High / Critical Risks</span>
                 <span class="text-4xl font-black text-red-600 dark:text-red-500 my-1" id="tally-high">0</span>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-amber-900/40 rounded-lg p-4 flex flex-col justify-between shadow-sm">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-amber-900/30 rounded-lg p-4 flex flex-col justify-between shadow-sm">
                 <span class="text-xs font-bold uppercase text-amber-600 dark:text-amber-400 tracking-wider">Alerts Investigated</span>
                 <span class="text-4xl font-black text-amber-600 dark:text-amber-500 my-1" id="tally-investigated">0</span>
                 <span class="text-[10px] text-slate-400 dark:text-slate-500">Playbooks actively reviewed</span>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-900/40 rounded-lg p-4 flex flex-col justify-between shadow-sm">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-emerald-900/30 rounded-lg p-4 flex flex-col justify-between shadow-sm">
                 <span class="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Threats Contained</span>
                 <span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 my-1" id="tally-contained">0</span>
                 <span class="text-[10px] text-slate-400 dark:text-slate-500">Mitigation playbooks completed</span>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 flex flex-col justify-between shadow-sm">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg p-4 flex flex-col justify-between shadow-sm">
                 <span class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Total Processed Logs</span>
                 <span class="text-3xl font-black text-slate-700 dark:text-slate-300 my-1" id="tally-total">0</span>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 flex-1 flex flex-col shadow-sm">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg p-4 flex-1 flex flex-col shadow-sm">
                 <span class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-3">Top At-Risk Assets</span>
                 <div id="server-tally-list" class="flex flex-col gap-2 overflow-y-auto max-h-[220px] text-sm"></div>
             </div>
@@ -64,7 +64,7 @@
 
         <section class="xl:col-span-3 flex flex-col gap-6">
             
-            <div class="bg-white/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-lg p-4 h-[42vh] flex flex-col shadow-sm">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800 rounded-lg p-4 h-[42vh] flex flex-col shadow-sm">
                 <div class="text-xs uppercase text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-2 mb-3">SIEM Real-Time Stream</div>
                 <div class="flex-1 overflow-y-auto">
                     <table class="w-full text-left">
@@ -82,7 +82,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 h-[33vh] flex flex-col shadow-sm" id="playbook-desk">
+            <div class="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg p-5 h-[33vh] flex flex-col shadow-sm" id="playbook-desk">
                 <div class="text-xs uppercase text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-2 mb-3">Analyst Investigation Desk</div>
                 <div id="playbook-content" class="flex-1 flex flex-col justify-center items-center text-slate-400 dark:text-slate-500 italic text-sm">
                     Select an active alert signature to initialize corporate incident playbook.
@@ -92,8 +92,8 @@
         </section>
     </main>
 
-    <footer class="p-4 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 flex justify-center items-center">
-        <button onclick="resetSimulationSession()" class="text-xs font-bold tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900/40 hover:border-red-400 dark:hover:border-red-700 px-4 py-2 rounded transition-all cursor-pointer shadow-sm">
+    <footer class="p-4 bg-white border-t border-slate-200 dark:bg-slate-950 dark:border-slate-900 flex justify-center items-center">
+        <button onclick="resetSimulationSession()" class="text-xs font-bold tracking-wider text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 dark:text-red-400 dark:bg-red-950/20 dark:border-red-900/40 dark:hover:bg-red-950/40 px-4 py-2 rounded transition-all cursor-pointer shadow-sm">
             ⚠️ WIPE LOCAL DATABASE & RESET SIMULATOR
         </button>
     </footer>
