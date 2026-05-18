@@ -87,7 +87,6 @@ function loadPlaybook(mitreID, assetName, rowElement, alertID) {
     
     currentActiveAlert = { row: rowElement, asset: assetName, mitre: mitreID, id: alertID };
 
-    // Register active investigation upon selection
     if (!investigatedAlerts.has(alertID)) {
         investigatedAlerts.add(alertID);
         state.investigatedCount++;
@@ -95,7 +94,6 @@ function loadPlaybook(mitreID, assetName, rowElement, alertID) {
         updateMetricsUI();
     }
 
-    // Shuffle options array slightly so the correct answer isn't always the first choice
     let optionsShuffled = [...playbook.options].sort(() => Math.random() - 0.5);
 
     let choicesHTML = optionsShuffled.map((opt) => `
@@ -125,11 +123,9 @@ function submitMitigationChoice(isCorrect) {
     const desk = document.getElementById('playbook-content');
 
     if (isCorrect) {
-        // Correct Action Pathway
         state.containedCount++;
         localStorage.setItem('soc_sim_state', JSON.stringify(state));
 
-        // Dim old table row visual display indicating successful mitigation resolution
         currentActiveAlert.row.style.opacity = '0.2';
         currentActiveAlert.row.removeAttribute('onclick');
         const btn = currentActiveAlert.row.querySelector('button');
@@ -145,7 +141,6 @@ function submitMitigationChoice(isCorrect) {
             </div>
         `;
     } else {
-        // Incorrect Action Pathway
         currentActiveAlert.row.style.opacity = '0.5';
         currentActiveAlert.row.removeAttribute('onclick');
         const btn = currentActiveAlert.row.querySelector('button');
@@ -195,6 +190,14 @@ function updateMetricsUI() {
         `;
         serverListContainer.appendChild(item);
     });
+}
+
+// Clear memory cache data completely and force a system refresh
+function resetSimulationSession() {
+    if (confirm("Are you sure you want to terminate this operational monitoring shift? All current session metrics and tallies will be permanently wiped.")) {
+        localStorage.removeItem('soc_sim_state');
+        window.location.reload();
+    }
 }
 
 setInterval(createProceduralAlert, 4000);
