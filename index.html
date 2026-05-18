@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise SOC Simulator Engine</title>
+    <!-- Tailwind CSS Engine for sleek dark-cyber styles -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Custom scrollbar matching the dark theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-mono min-h-screen flex flex-col">
+
+    <!-- Top Status Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/50 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <span class="animate-pulse h-3 w-3 rounded-full bg-emerald-500"></span>
+            <h1 class="text-xl font-bold tracking-wider text-emerald-400">CYBER-ENGINE // INTERACTIVE SOC</h1>
+        </div>
+        <div class="text-sm text-slate-400" id="sim-clock">Shift Time: 00:00:00</div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="p-6 flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6">
+        
+        <!-- Left Column: Metrics & Tallies -->
+        <section class="xl:col-span-1 flex flex-col gap-4">
+            <h2 class="text-xs uppercase tracking-widest text-slate-400 font-bold border-b border-slate-800 pb-2">Risk Tallies & Metrics</h2>
+            
+            <!-- High Risk Counter -->
+            <div class="bg-slate-900 border border-red-900/50 rounded-lg p-4 flex flex-col justify-between shadow-lg shadow-red-950/10">
+                <span class="text-xs font-bold uppercase text-red-400 tracking-wider">High / Critical Risks</span>
+                <span class="text-4xl font-black text-red-500 my-1" id="tally-high">0</span>
+            </div>
+
+            <!-- Investigated Counter -->
+            <div class="bg-slate-900 border border-amber-900/40 rounded-lg p-4 flex flex-col justify-between">
+                <span class="text-xs font-bold uppercase text-amber-400 tracking-wider">Alerts Investigated</span>
+                <span class="text-4xl font-black text-amber-500 my-1" id="tally-investigated">0</span>
+                <span class="text-[10px] text-slate-500">Playbooks actively reviewed</span>
+            </div>
+
+            <!-- Contained Counter -->
+            <div class="bg-slate-900 border border-emerald-900/40 rounded-lg p-4 flex flex-col justify-between">
+                <span class="text-xs font-bold uppercase text-emerald-400 tracking-wider">Threats Contained</span>
+                <span class="text-4xl font-black text-emerald-400 my-1" id="tally-contained">0</span>
+                <span class="text-[10px] text-slate-500">Mitigation playbooks completed</span>
+            </div>
+
+            <!-- Total Logs Processed Counter -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col justify-between">
+                <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Processed Logs</span>
+                <span class="text-3xl font-black text-slate-300 my-1" id="tally-total">0</span>
+            </div>
+
+            <!-- Asset Health Index -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 flex-1 flex flex-col">
+                <span class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Top At-Risk Assets</span>
+                <div id="server-tally-list" class="flex flex-col gap-2 overflow-y-auto max-h-[220px] text-sm"></div>
+            </div>
+        </section>
+
+        <!-- Right/Center Columns: Stream Feed & Triage Desk -->
+        <section class="xl:col-span-3 flex flex-col gap-6">
+            
+            <!-- Live SIEM Log Feed Panel -->
+            <div class="bg-slate-900/40 border border-slate-800 rounded-lg p-4 h-[42vh] flex flex-col">
+                <div class="text-xs uppercase text-slate-400 font-bold border-b border-slate-800 pb-2 mb-3">SIEM Real-Time Stream</div>
+                <div class="flex-1 overflow-y-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-xs text-slate-500 uppercase border-b border-slate-900">
+                                <th class="pb-2 w-24">Timestamp</th>
+                                <th class="pb-2 w-32">Asset</th>
+                                <th class="pb-2">Incident / Signature</th>
+                                <th class="pb-2 w-24 text-center">Severity</th>
+                                <th class="pb-2 w-24 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-stream-body" class="divide-y divide-slate-900 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Contextual Playbook Investigation Desk -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-5 h-[33vh] flex flex-col" id="playbook-desk">
+                <div class="text-xs uppercase text-slate-400 font-bold border-b border-slate-800 pb-2 mb-3">Analyst Investigation Desk</div>
+                <div id="playbook-content" class="flex-1 flex flex-col justify-center items-center text-slate-500 italic text-sm">
+                    Select an active alert signature to initialize corporate incident playbook.
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Source ordering matters: data library first, then operational engine -->
+    <script src="js/playbooks.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
