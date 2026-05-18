@@ -21,7 +21,7 @@ let state = {
     containedCount: 0,
     serverTallies: {}, 
     secondsElapsed: 0,
-    theme: "dark" // Default session baseline configuration framework
+    theme: "dark" // Main application operational configuration profile
 };
 
 let currentActiveAlert = null;
@@ -32,7 +32,7 @@ if (localStorage.getItem('soc_sim_state')) {
     state = { ...state, ...savedState };
 }
 
-// Fire the theme setup right away on load
+// Fire theme setup immediately
 initializeActiveTheme();
 
 function initializeActiveTheme() {
@@ -81,24 +81,24 @@ function createProceduralAlert() {
 function renderAlertRow(time, asset, msg, severity, mitre) {
     const tbody = document.getElementById('alert-stream-body');
     
-    let badgeClass = "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700";
-    if (severity === "Low") badgeClass = "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30";
-    if (severity === "Medium") badgeClass = "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30";
-    if (severity === "High") badgeClass = "bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-900/30 font-bold";
-    if (severity === "Critical") badgeClass = "bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 animate-pulse font-extrabold";
+    let badgeClass = "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700";
+    if (severity === "Low") badgeClass = "bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30";
+    if (severity === "Medium") badgeClass = "bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30";
+    if (severity === "High") badgeClass = "bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400 border border-orange-200 dark:border-orange-900/30 font-bold";
+    if (severity === "Critical") badgeClass = "bg-red-100 dark:bg-red-950/50 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-900 animate-pulse font-extrabold";
 
     const row = document.createElement('tr');
-    row.className = "hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition-colors border-b border-slate-100 dark:border-slate-900/50 cursor-pointer text-slate-600 dark:text-slate-400";
+    row.className = "hover:bg-slate-200/50 dark:hover:bg-slate-900/60 transition-colors border-b border-slate-200 dark:border-slate-900/50 cursor-pointer text-slate-700 dark:text-slate-400";
     const uniqueAlertID = `${time}-${mitre}`;
     row.setAttribute("onclick", `loadPlaybook('${mitre}', '${asset}', this, '${uniqueAlertID}')`);
     
     row.innerHTML = `
         <td class="py-2.5 font-mono text-xs text-slate-400 dark:text-slate-500">${time}</td>
-        <td class="py-2.5 font-semibold text-slate-800 dark:text-slate-300">${asset}</td>
-        <td class="py-2.5 pr-4 truncate max-w-md">${msg}</td>
+        <td class="py-2.5 font-semibold text-slate-900 dark:text-slate-300">${asset}</td>
+        <td class="py-2.5 pr-4 truncate max-w-md text-slate-800 dark:text-slate-400">${msg}</td>
         <td class="py-2.5 text-center"><span class="px-2 py-0.5 rounded text-xs ${badgeClass}">${severity}</span></td>
         <td class="py-2.5 text-right">
-            <button class="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2 py-1 rounded">Investigate</button>
+            <button class="text-xs text-emerald-800 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-900 px-2 py-1 rounded font-bold">Triage</button>
         </td>
     `;
 
@@ -123,7 +123,7 @@ function loadPlaybook(mitreID, assetName, rowElement, alertID) {
 
     let choicesHTML = optionsShuffled.map((opt) => `
         <button onclick="submitMitigationChoice(${opt.correct})" 
-                class="w-full text-left font-sans text-xs bg-slate-50 border border-slate-200 hover:border-slate-400 text-slate-800 dark:bg-slate-950/60 dark:border-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-900 dark:text-slate-300 p-3 rounded transition-all cursor-pointer">
+                class="w-full text-left font-sans text-xs bg-white border border-slate-200 hover:border-slate-400 text-slate-800 dark:bg-slate-950/60 dark:border-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-900 dark:text-slate-300 p-3 rounded transition-all cursor-pointer shadow-xs">
             🔹 ${opt.text}
         </button>
     `).join('');
@@ -161,22 +161,22 @@ function submitMitigationChoice(isCorrect) {
 
         desk.innerHTML = `
             <div class="flex flex-col items-center justify-center text-center py-2">
-                <span class="text-emerald-600 dark:text-emerald-500 font-bold text-sm tracking-wide mb-1">✔ THREAT CONTAINED SUCCESSFULLY</span>
-                <span class="text-xs text-slate-500 dark:text-slate-400">Correct remediation vector processed. Keep monitoring SIEM telemetry feeds.</span>
+                <span class="text-emerald-700 dark:text-emerald-500 font-bold text-sm tracking-wide mb-1">✔ THREAT CONTAINED SUCCESSFULLY</span>
+                <span class="text-xs text-slate-600 dark:text-slate-400">Correct remediation vector processed. Keep monitoring SIEM telemetry feeds.</span>
             </div>
         `;
     } else {
-        currentActiveAlert.row.style.opacity = '0.5';
+        currentActiveAlert.row.style.opacity = '0.4';
         currentActiveAlert.row.removeAttribute('onclick');
         const btn = currentActiveAlert.row.querySelector('button');
         if (btn) {
             btn.innerText = "Failed";
-            btn.className = "text-xs text-red-600/60 dark:text-red-400/60 border border-red-200 dark:border-red-950 bg-red-50 dark:bg-red-950/10 px-2 py-1 rounded cursor-not-allowed";
+            btn.className = "text-xs text-red-600 border border-red-200 bg-red-50 dark:text-red-400 dark:border-red-950 dark:bg-red-950/10 px-2 py-1 rounded cursor-not-allowed";
         }
 
         desk.innerHTML = `
             <div class="flex flex-col items-center justify-center text-center py-2">
-                <span class="text-red-600 dark:text-red-500 font-bold text-sm tracking-wide mb-1">❌ NOT CONTAINED - ESCALATING THREAT</span>
+                <span class="text-red-700 dark:text-red-500 font-bold text-sm tracking-wide mb-1">❌ NOT CONTAINED - ESCALATING THREAT</span>
                 <span class="text-xs text-slate-600 dark:text-slate-400 max-w-md">Incorrect protocol chosen. Remediation step failed, incident log payload passed to Tier-3 engineering teams.</span>
             </div>
         `;
@@ -203,9 +203,9 @@ function updateMetricsUI() {
     sortedServers.slice(0, 4).forEach(server => {
         const counts = state.serverTallies[server];
         const item = document.createElement('div');
-        item.className = "flex justify-between items-center bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-900 p-1.5 rounded";
+        item.className = "flex justify-between items-center bg-white border border-slate-200 dark:bg-slate-950/60 dark:border-slate-900 p-1.5 rounded shadow-2xs";
         item.innerHTML = `
-            <span class="font-bold text-slate-600 dark:text-slate-400 text-xs">${server}</span>
+            <span class="font-bold text-slate-700 dark:text-slate-400 text-xs">${server}</span>
             <div class="flex gap-1 text-[9px] font-sans">
                 <span class="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 px-1 rounded">${counts.Critical || 0}C</span>
                 <span class="bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 px-1 rounded">${counts.High || 0}H</span>
